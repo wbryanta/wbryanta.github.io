@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I scored the internet's favorite “AI tells” against 15 great novelists. They flag the novelists. — Will Bryant</title>
+<meta name="description" content="The em dash, 'not X but Y', and ten other folk AI tells scored against 15 celebrated novelists: combined AUC 0.506. Plus what probability-curvature detectors really measure, and four retracted claims.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><line x1='4' y1='16' x2='28' y2='16' stroke='%231c1811' stroke-width='2'/><line x1='4' y1='10' x2='4' y2='22' stroke='%231c1811' stroke-width='2'/><line x1='28' y1='10' x2='28' y2='22' stroke='%231c1811' stroke-width='2'/><circle cx='19' cy='16' r='4' fill='%23b3421f'/></svg>">
+</head>
+<body>
+<div class="masthead">
+  <a class="wordmark" href="../index.html">Will Bryant</a>
+  <nav><a href="../index.html">home</a><a href="https://github.com/wbryanta">github</a></nav>
+</div>
+<article>
+  <header class="title">
+    <svg class="glyph" width="120" height="18" viewBox="0 0 160 22" aria-hidden="true">
+      <line x1="2" y1="11" x2="158" y2="11" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="2" y1="4" x2="2" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="158" y1="4" x2="158" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="80" y1="6.5" x2="80" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <line x1="132" y1="6.5" x2="132" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <circle cx="104" cy="11" r="4.4" fill="#b3421f"/>
+    </svg>
+    <h1>I scored the internet's favorite “AI tells” against 15 great novelists. They flag the novelists.</h1>
+    <p class="dek">Twelve folk tells, operationalized and scored: a coin flip that burns exactly the writers with the strongest voices — and what the statistical detectors actually measure.</p>
+    <p class="meta">Will Bryant <span class="dot">·</span> 2026 <span class="dot">·</span> stylometry, measurement</p>
+  </header>
+  <div class="prose">
+<p>There’s a checklist going around for spotting AI-written prose: the
+em dash, “not X, but Y,” the rule-of-three, “delve,” corporate jargon,
+hedging. People lose jobs and grades over these tells. So I did the
+boring thing nobody does with folk wisdom: I operationalized all twelve
+as conservative regexes and counted them — in 390 windows of prose by
+fifteen celebrated novelists (Morrison, Ishiguro, Pynchon, McCarthy,
+Didion — 78 books, 3,500 words per window), and in 400 long-form fiction
+samples from eight current AI models, generated with <em>no style
+instruction at all</em>.</p>
+<p>If the tells worked, the AI samples would light up and the novelists
+wouldn’t.</p>
+<p><strong>Combined — the way the checklists themselves combine them,
+unweighted — the twelve tells are a coin flip: AUC 0.506.</strong> Tune
+a threshold to catch half the machine samples and it falsely flags
+<strong>50.8% of the novelist windows</strong> — including Ishiguro 24
+of 30, Pynchon 16 of 20, and Morrison 34 of 45.</p>
+<p>Some individual results, because the details are where the fun
+is:</p>
+<ul>
+<li><strong>The em dash — the internet’s favorite tell — is the
+<em>best</em> one, and it’s still weak.</strong> AUC 0.680, with a
+cluster-bootstrap CI so wide [0.48, 0.85] it kisses chance. Yes, current
+models over-use the em dash (median 3.7 per 1,000 words vs 1.7 for the
+novelists). No, you cannot accuse a specific writer with that.</li>
+<li><strong>Four tells run backwards.</strong> Humans — celebrated,
+canonical humans — use MORE exclamation marks (AUC 0.238), more
+superlatives (0.305), and more hedging (0.410) than the machines do. If
+you’re flagging prose for exclamation points, you’re flagging
+humans.</li>
+<li><strong>“Delve,” the poster-child tell, is degenerate on
+fiction.</strong> Median zero on both sides. Novelists don’t “delve,”
+and neither do models writing fiction.</li>
+</ul>
+<p>There’s a deeper problem with the checklist than its accuracy: what
+it burns. The em dash is not an AI artifact — it’s a core tool of
+punctuated literary prose, and the models learned it <em>from us</em>.
+“Not X, but Y” is antithesis, a rhetorical figure writers have used for
+a couple of millennia; the rule of three is older than the codex. When a
+checklist teaches people to read ancient craft as machine residue, the
+practical result isn’t AI detection — it’s writers sanding the
+distinctive features out of their own prose to avoid accusation. The
+tells aren’t fingerprints of machines. Mostly they’re fingerprints of
+<em>edited prose</em>, and the false positives land exactly on the
+writers with strong, unusual voices.</p>
+<p>What about the statistical detectors — the GPTZero-class tools that
+score the “vibe” of a whole text? Honest answer: on this task, they
+work. We ran a state-of-the-art probability-curvature detector over the
+same corpora and it separated the novelists from pure model output
+cleanly — no checklist required. But decomposing <em>what</em> it
+measures changes how much weight the score can carry. In our data, the
+large majority of the detector’s signal reduces to a single scalar: how
+statistically predictable the prose is to a language model — the
+low-entropy register that current post-training produces. That’s a
+detector of a <em>register</em>, not of <em>origin</em>. And the
+register is a moving target: it moves with vendor, settings, and version
+(turning up some models’ reasoning effort measurably shifts text along
+that axis toward the human band), so a tool calibrated on this year’s
+checkpoints quietly mismeasures next year’s. None of that makes the
+tools useless — it makes them <strong>screening instruments being used
+as verdicts</strong>. In settings where most of what you screen is
+human-written, even a good detector applied to an individual piece of
+writing produces mostly false accusations, and the tools don’t ship with
+the calibrated uncertainty that would let a teacher or editor know
+that.</p>
+<p>Both failure directions matter. Without honest context on
+limitations, people keep getting falsely accused — and the accused are
+disproportionately distinctive stylists and non-native speakers, whose
+prose sits exactly where the scores misread. Meanwhile the reverse
+traffic flows freely: lightly-edited machine text passes without much
+trouble, which is only a problem when it’s fraudulent or undisclosed —
+and that is a <em>norms and transparency</em> problem, not one a scoring
+tool can solve. The measurement layer cannot carry the enforcement
+weight being piled on it. Measurement can tell you where a text sits;
+only disclosure can tell you whether that’s honest.</p>
+<h2 id="nobodys-copy-but-somebody-anyway">Nobody’s copy, but somebody
+anyway</h2>
+<p>The tells study fell out of a larger question: not “can you detect AI
+text?” but “how close can a model actually get to a <em>specific</em>
+writer?” — measured the way stylometry measures humans, against the
+author’s own range of variation. You calibrate a measurement space on
+published novelists, build each author an envelope from how much she
+differs from herself at a fixed length, and then ask whether an
+imitation lands inside it.</p>
+<p>Two results from that work reframed how I think about “AI voice.”</p>
+<p>First: asked to imitate a named author, models move the
+<em>surface</em> — lexical variety, repetition texture, tense and
+sentiment — but the layer stylometry actually uses to attribute
+authorship, the frequencies of little function words like <em>of</em>,
+<em>but</em>, <em>the</em>, barely moves: in our floor-compliant runs,
+prompting closes about 6% of the function-word gap, and none of the
+broader most-frequent-word gap (that movement is indistinguishable from
+zero). Naming the author raises envelope entry from 10.7% to 30.5% on
+the function-word layer — real, but most imitations never get inside —
+and handing the model the author’s actual opening pages beats
+<em>telling it the author’s name</em> for every informative model we
+could compare. The name is mostly a vibe; the text is data.</p>
+<p>Second, and stranger: when the models write with <strong>no</strong>
+style instruction at all, their output typically lands far from every
+<em>particular</em> author — at full vocabulary, the median unprompted
+sample sits outside every one of the fifteen envelopes — though the
+widest envelopes (Murakami, Foster Wallace) admit plenty of generic AI
+prose, which is why every imitation number has to be read against that
+base rate. But run the attribution machinery on the models themselves
+and each one self-attributes at <strong>97.8%</strong>, against a 12.5%
+chance rate. And here’s the twist: that’s <em>not</em> because the
+models are narrow — at matched length, a model’s variation from itself
+is about as wide as a novelist’s variation from herself. Each model is a
+stable, identifiable voice with real range. That’s the honest shape of
+the “AI voice” question: not a formless average, but a set of
+<em>new</em> voices that are easy to tell from each other and
+consistently far from any particular human they’re asked to become.</p>
+<h2 id="the-part-i-care-most-about-killing-my-own-results">The part I
+care most about: killing my own results</h2>
+<p>One more disclosure, because it’s load-bearing for whether you should
+trust any of the numbers above. Over this project I commissioned
+independent adversarial reviews of my own headline results — three full
+cycles — with instructions to refute, not confirm. They caught real
+problems. Across those cycles, <strong>four of my own headline claims
+were retracted</strong> before anyone outside the project saw them. The
+most recent was the kind of result you dream about: a clean, significant
+finding (p = 0.011) about reasoning models and authorial voice. The
+review found two construct-validity failures the significance tests
+couldn’t see; the follow-up controls confirmed them; the claims are
+gone. The full adversarial record — the attacks, the retractions, what
+survived — ships with the paper’s companion repository, on purpose.</p>
+<p>I mention this not as virtue signaling but as method: in a field this
+easy to fool yourself in — where a plausible number about “AI writing”
+will be quoted a thousand times before anyone checks it — the red team
+is not optional infrastructure. The tells study above survived it.
+That’s the only reason I’m comfortable asking you to repeat it.</p>
+<p>Everything here is checkable. The scorer is a single zero-dependency
+Python file, the data is CC0, and a <code>--reproduce</code> flag
+re-derives all 179 published statistics from the bundled rates. Score
+your own writing with it, or your accuser’s:</p>
+<p><strong>github.com/wbryanta/mnemosyne-overview →
+<code>tells/</code></strong></p>
+<p>This is a side artifact of a larger measurement study (<em>The Width
+of a Voice</em>: placing machine imitation inside authors’ own measured
+variation — preprint forthcoming). The short version of that one: when
+you ask a model to imitate a specific author, the surface texture moves,
+but the function-word layer that actually carries authorship barely
+does. The tells study is the flip side: the surface features people
+<em>think</em> give machines away mostly don’t.</p>
+<p>If you check the data and find something wrong, I want to know — the
+repo issues are open, and “someone re-ran my numbers and broke them”
+would be the most useful outcome I could ask for.</p>
+<hr />
+<hr />
+<p><em>Also on this site: <a href="terrarium-crafter.html">I spent a
+week teaching an AI to survive a video game. It taught me what real
+evidence looks like.</a></em></p>
+
+  </div>
+</article>
+<footer>
+  <span>© 2026 Will Bryant · text CC BY 4.0</span>
+  <span><a href="../index.html">← all essays</a></span>
+</footer>
+</body>
+</html>

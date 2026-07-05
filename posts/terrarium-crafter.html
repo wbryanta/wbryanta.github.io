@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I Spent a Week Teaching an AI to Survive a Video Game. It Taught Me What Real Evidence Looks Like. — Will Bryant</title>
+<meta name="description" content="Building a Crafter agent with zero GPUs: nondeterministic benchmarks, six phantom results, three real wins, and why search beat frontier LLMs at staying alive.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><line x1='4' y1='16' x2='28' y2='16' stroke='%231c1811' stroke-width='2'/><line x1='4' y1='10' x2='4' y2='22' stroke='%231c1811' stroke-width='2'/><line x1='28' y1='10' x2='28' y2='22' stroke='%231c1811' stroke-width='2'/><circle cx='19' cy='16' r='4' fill='%23b3421f'/></svg>">
+</head>
+<body>
+<div class="masthead">
+  <a class="wordmark" href="../index.html">Will Bryant</a>
+  <nav><a href="../index.html">home</a><a href="https://github.com/wbryanta">github</a></nav>
+</div>
+<article>
+  <header class="title">
+    <svg class="glyph" width="120" height="18" viewBox="0 0 160 22" aria-hidden="true">
+      <line x1="2" y1="11" x2="158" y2="11" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="2" y1="4" x2="2" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="158" y1="4" x2="158" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="80" y1="6.5" x2="80" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <line x1="132" y1="6.5" x2="132" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <circle cx="104" cy="11" r="4.4" fill="#b3421f"/>
+    </svg>
+    <h1>I Spent a Week Teaching an AI to Survive a Video Game. It Taught Me What Real Evidence Looks Like.</h1>
+    <p class="dek">A MacBook, a survival game, a stack of honest failures, and the three ideas that actually worked.</p>
+    <p class="meta">Will Bryant <span class="dot">·</span> 2026 <span class="dot">·</span> agents, evaluation</p>
+  </header>
+  <div class="prose">
+<hr />
+<p>This started as a simple question: how good an agent can you build
+for a little survival game using <strong>zero GPUs, zero training runs,
+and one laptop</strong> — just careful engineering, an AI research
+partner, and the willingness to be wrong in public (well, in my
+terminal)?</p>
+<p>The game is <a href="https://github.com/danijar/crafter">Crafter</a>,
+a 2D Minecraft-like benchmark the RL community uses: chop trees, craft
+tools, mine iron, dodge zombies, don’t starve, and — if you’re very good
+— mine a diamond. It scores agents on the geometric mean of 22
+achievements, which has a spicy property we’ll come back to: it rewards
+<em>doing many things occasionally</em> far more than <em>doing one
+thing well</em>.</p>
+<p>Published agents train on ~a million environment steps of GPU time. I
+don’t have that. I have a MacBook Pro, an evening habit, and Claude
+running a small research team. What follows is what we found — including
+the part where we were confidently wrong twice, and the part where I
+accidentally became the research subject.</p>
+<h2 id="act-1-the-agent-kept-dying-at-midnight">Act 1: The agent kept
+dying at midnight</h2>
+<p>Our starting agent was a hand-built planner with a privileged view of
+the full map (no pixels, no learning — the point was to find the
+<em>ceiling</em> of engineering before touching ML). It could chop,
+craft, and mine competently… and it died, over and over, around step 205
+— the first night, when the zombies come out.</p>
+<p>So I did the obvious thing that nobody does: <strong>I played the
+game myself.</strong> Badly at first. Then less badly. Then — and I want
+this on the record — a perfect <strong>22/22 completion</strong>, and a
+separate 4,122-step marathon where I basically retired to a fortified
+lake house with an orchard.</p>
+<p>Playing generated <em>doctrine</em>: build your base where stone
+meets water (two free walls). Seal yourself in at night — dig two cells
+into a mountain and wall the entrance behind you. Never fight at low
+health far from home. Budget your daylight; be home before dusk. My AI
+partner encoded each of these into the agent, faithfully, one at a
+time.</p>
+<p>And almost none of it worked.</p>
+<h2 id="act-2-the-measurement-was-lying-to-us">Act 2: The measurement
+was lying to us</h2>
+<p>Here’s the thing that changed the project. After a string of
+suspicious results — effects that appeared at 20 seeds and vanished at
+40 — we finally tested something nobody thinks to test: run the
+<em>identical</em> agent on the <em>identical</em> seed six times.</p>
+<figure>
+<img src="assets/terrarium/1_nondeterminism.png"
+alt="Same seed, same policy, six different episodes" />
+<figcaption aria-hidden="true">Same seed, same policy, six different
+episodes</figcaption>
+</figure>
+<p><strong>Crafter is not deterministic per seed.</strong> Same policy,
+same seed 13: episodes of 217, 223, 247, 289, 391, and <em>828</em>
+steps. The terrain is seeded, but the monster spawning iterates over
+Python sets ordered by memory address — so the zombies that kill you are
+different every run. Every paired-seed comparison we (and, I suspect,
+others) had been running had a hidden noise floor of ~73 steps. We had
+been grading coin flips.</p>
+<p>The fix was boring and it was the best thing we built: an evaluation
+harness that runs repetitions per seed, and <strong>prints the minimum
+detectable effect next to every result</strong> — so a “null” always
+says what it <em>could have</em> ruled out. From then on, every claim
+had to survive pre-registration, an engagement check (did the treatment
+actually <em>fire</em>?), and replication on fresh seeds.</p>
+<p>That instrument caught <strong>six</strong> convincing-but-invalid
+results over the campaign. My favorites: a shelter-building behavior
+whose crucial wall-placement had accidentally been left in the <em>test
+harness</em> rather than the agent (looked like a big win; the agent
+literally couldn’t do it alone), and an ablation arm that silently never
+engaged — a “null” from a treatment that never happened. If you take one
+thing from this post: <strong>before you interpret any A/B result,
+verify the treatment occurred.</strong></p>
+<h2 id="act-3-three-wins-a-dozen-honest-nulls">Act 3: Three wins, a
+dozen honest nulls</h2>
+<p>With trustworthy measurement, we ran the campaign: encode an idea,
+pre-register the test, measure, keep or kill. Here is every lever we
+measured, wins and corpses alike:</p>
+<figure>
+<img src="assets/terrarium/2_forest.png"
+alt="Forest plot of every lever" />
+<figcaption aria-hidden="true">Forest plot of every lever</figcaption>
+</figure>
+<p>Three things genuinely worked:</p>
+<p><strong>The night burrow (+3 score).</strong> Dig two cells into a
+mountain, step in, place a stone behind you — fully sealed,
+zombie-proof, sleep until dawn, mine your way out (you get the stone
+back). The ablation surprise: the <em>enclosure alone</em> is worthless,
+and <em>provisioning alone</em> is worthless — only the full bundle
+(seal + top off food/water + site near water so the wall doubles as a
+drinking fountain) beats baseline. Complements, not substitutes.</p>
+<p><strong>Forward-model tactical search (survival +45%).</strong> This
+was the project’s turning point — more below.</p>
+<p><strong>The day-budget scheduler (+1.6 score, replicated on fresh
+seeds).</strong> Straight from my own play: compute a budget
+<code>B = time-until-dusk − distance-home − reset-time − margin</code>
+every step, spend the morning on the deepest tech goal that fits in B,
+and <em>hard-return home when B hits zero</em>. In 320 episodes it got
+caught out after dark exactly once.</p>
+<p>And the nulls — the furnace reorder, the food economy, the “stay
+local” homesteader, three(!) increasingly clever versions of my orchard
+— each killed properly, with confidence intervals, several teaching us
+something real on the way down. The food-economy lever even
+<em>backfired</em> (−2.9): chasing cows costs more tech than the food
+pays for. My 22/22 doctrine was correct <em>for me</em> and mostly
+didn’t transfer — because I could hold planting, survival, and
+tech-progress simultaneously, and the scripted agent had to pay for each
+with the others. We eventually named the measured version of this the
+<strong>orchard trilemma</strong>.</p>
+<h2 id="act-4-we-declared-the-project-dead.-a-reviewer-disagreed.">Act
+4: We declared the project dead. A reviewer disagreed.</h2>
+<p>After the doctrine failures, we wrote the sober conclusion: every
+scriptable lever nulls; the remaining gap needs learned representation;
+stop here. I asked for an independent adversarial review of the whole
+project — explicitly told the reviewer that “this is a good stopping
+point” and “there’s more here” were both acceptable answers.</p>
+<p>The review came back: <em>your conclusion rests on a miscalibrated
+instrument</em> (that’s when the nondeterminism was pinned down),
+<em>and you’ve exhausted the heuristic space but never touched the
+planning space</em>. Crafter is turn-based. The environment is right
+there. <strong>Why is nobody searching?</strong></p>
+<p>So, the last swing, pre-registered to be the final word either way:
+at dangerous moments (a monster within 6 tiles), deep-copy the world
+state — 0.5 milliseconds — and simulate each candidate action a few
+turns forward against sampled monster behavior. Pick the action that
+keeps you alive. No learning. No GPU. ~26ms per decision.</p>
+<figure>
+<img src="assets/terrarium/4_reasoning_vs_planning.png"
+alt="Reasoning vs planning" />
+<figcaption aria-hidden="true">Reasoning vs planning</figcaption>
+</figure>
+<p><strong>Median survival jumped from 232 to 337 steps</strong> — the
+largest, most-replicated effect of the whole project (five independent
+measurements, including an adversarial reproduction on seeds nobody had
+tuned on). The plateau that had eaten every heuristic fell to three-ply
+lookahead.</p>
+<p>The chart above is my favorite result. We also handed those <em>same
+decisions</em> to LLMs — a local 26B model, and GPT-5 via API. Their
+verbal reasoning was consistently sensible (“hold the chokepoint, take
+them single-file!”) and their play was <em>worse than the reflexes</em>,
+because prose strips the geometry: “hold” never swings, arrows fly in
+lanes you can sidestep, cover is a specific cell, not a concept. Gemma
+and GPT-5 failed <em>identically</em>. The bottleneck was never
+reasoning. It was <strong>grounding</strong> — and search, which gets
+the geometry for free, supplied what three generations of language
+models could not.</p>
+<h2 id="act-5-what-the-wins-actually-bought">Act 5: What the wins
+actually bought</h2>
+<figure>
+<img src="assets/terrarium/3_progression.png"
+alt="The stack, layer by layer" />
+<figcaption aria-hidden="true">The stack, layer by layer</figcaption>
+</figure>
+<p>One honest wrinkle: the search win was <em>purely defensive</em> —
+the agent survived 45% longer and its score didn’t move, because it
+spent the extra life declining fights. That’s what the scheduler fixed:
+protected daylight, spent on purpose. And the burrow’s score win came
+almost entirely from breadth:</p>
+<figure>
+<img src="assets/terrarium/5_burrow_vector.png"
+alt="What the burrow did" />
+<figcaption aria-hidden="true">What the burrow did</figcaption>
+</figure>
+<p>The geomean rewards reliably doing <em>cheap</em> things (place a
+stone, sleep safely, eat a cow) far more than heroically doing deep ones
+— the deep tree (iron tools, diamond) stayed at zero throughout. That’s
+not a complaint about our agent so much as an observation about the
+benchmark: <strong>a survival-first agent farms breadth almost by
+accident.</strong></p>
+<p>Final tally: <strong>~17 → ~20.3 geomean, median survival 205 →
+337.</strong> For scale, DreamerV3 — a serious learned agent trained on
+~1M steps — reports ~14.8 on this benchmark. Our agent reads a
+privileged map, so it’s not a fair fight and I’m not claiming a
+leaderboard spot. But I’ll absolutely claim this: <em>a laptop, a
+human’s game sense, three-ply search, and honest statistics beat a lot
+of compute.</em></p>
+<h2 id="what-i-actually-learned">What I actually learned</h2>
+<ol type="1">
+<li><strong>Measure the noise before you measure the effect.</strong>
+The single most valuable artifact we built was the harness that reports
+its own detection limit. Every “null” thereafter was a <em>bounded</em>
+statement, not a shrug.</li>
+<li><strong>Verify the treatment fired.</strong> Six phantom results.
+Six. In a one-person hobby project with careful habits. I now assume
+every A/B result is invalid until the engagement counters say
+otherwise.</li>
+<li><strong>The constraint ladder is real.</strong> Each wall we hit was
+diagnosed by the previous wall’s honest nulls: representation → tactical
+judgment → time discipline → resource staging. You can’t skip rungs, and
+the <em>name</em> of your current wall is the most valuable thing your
+failures can tell you.</li>
+<li><strong>Reasoning ≠ grounding.</strong> The most quotable finding:
+frontier LLMs tie a dummy controller when the decisions don’t need
+geometry, and lose to it when they do. If your agent lives on a grid,
+give it the grid.</li>
+<li><strong>Doctrine doesn’t transfer; capabilities do.</strong>
+Encoding what an expert <em>does</em> fails if the agent lacks what the
+expert <em>has</em>. Every real win here gave the agent a capability (a
+shelter, a lookahead, a clock) rather than an imitation.</li>
+</ol>
+<h2 id="the-record-book">The record book</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Most successful build</td>
+<td>burrow + tactical search + day scheduler (all opt-in, all
+pre-registered)</td>
+</tr>
+<tr>
+<td>Agent: median survival / score</td>
+<td>337 steps · ~20.3 geomean</td>
+</tr>
+<tr>
+<td>Agent: best episodes</td>
+<td>hit our 1,000-step eval cap; best single episode 16/22
+achievements</td>
+</tr>
+<tr>
+<td>Human: longest run</td>
+<td>4,122 steps (~14 in-game days), 21/22</td>
+</tr>
+<tr>
+<td>Human: perfect game</td>
+<td><strong>22/22</strong>, 1,142 steps — still the only one on
+record</td>
+</tr>
+</tbody>
+</table>
+<p>The machine got good. The human is still the exemplar. Given that
+every good idea in this project started as a feeling in my hands during
+a midnight run from a zombie, that seems exactly right.</p>
+<hr />
+<p><em>This was a hobby project done for fun and learning — not Serious
+Research — but the numbers are real: every result above was
+pre-registered, measured at N=80–400 with confidence intervals, and the
+wins were replicated on untouched seeds (the code, evals, and the full
+trail of nulls live in the project repo). If you take a swing at
+something like this, I’d genuinely love to hear what your failures
+taught you.</em></p>
+<hr />
+<p><em>Also on this site: <a href="width-of-a-voice.html">I scored the
+internet’s favorite “AI tells” against 15 great novelists. They flag the
+novelists.</a></em></p>
+
+  </div>
+</article>
+<footer>
+  <span>© 2026 Will Bryant · text CC BY 4.0</span>
+  <span><a href="../index.html">← all essays</a></span>
+</footer>
+</body>
+</html>
