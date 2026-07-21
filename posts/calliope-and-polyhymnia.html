@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two new research programs, built to tell me no. — Will Bryant</title>
+<meta name="description" content="Introducing Calliope and Polyhymnia: one asks whether any open-weight model can carry long-form literary fiction; the other treats a century of writing craft as an evidence base. Both are designed so 'no' is a publishable answer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><line x1='4' y1='16' x2='28' y2='16' stroke='%231c1811' stroke-width='2'/><line x1='4' y1='10' x2='4' y2='22' stroke='%231c1811' stroke-width='2'/><line x1='28' y1='10' x2='28' y2='22' stroke='%231c1811' stroke-width='2'/><circle cx='19' cy='16' r='4' fill='%23b3421f'/></svg>">
+</head>
+<body>
+<div class="masthead">
+  <a class="wordmark" href="../index.html">Will Bryant</a>
+  <nav><a href="../index.html">home</a><a href="https://github.com/wbryanta">github</a></nav>
+</div>
+<article>
+  <header class="title">
+    <svg class="glyph" width="120" height="18" viewBox="0 0 160 22" aria-hidden="true">
+      <line x1="2" y1="11" x2="158" y2="11" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="2" y1="4" x2="2" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="158" y1="4" x2="158" y2="18" stroke="#1c1811" stroke-width="1.6"/>
+      <line x1="80" y1="6.5" x2="80" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <line x1="132" y1="6.5" x2="132" y2="15.5" stroke="#6d6455" stroke-width="1.2"/>
+      <circle cx="104" cy="11" r="4.4" fill="#b3421f"/>
+    </svg>
+    <h1>Two new research programs, built to tell me no.</h1>
+    <p class="dek">Calliope asks whether any open-weight model can actually carry long-form
+    literary fiction. Polyhymnia asks whether a century of writing craft can be treated as
+    evidence instead of vibes. Both are designed so that &ldquo;no&rdquo; is a publishable answer.</p>
+    <p class="meta">Will Bryant <span class="dot">·</span> July 21, 2026 <span class="dot">·</span> evaluation, long-form writing</p>
+  </header>
+  <div class="prose">
+<p><a href="../index.html">The Width of a Voice</a> measured one thing: when a model
+imitates an author, how far inside that author&rsquo;s own variation does it actually
+land? That work taught me that the interesting questions about machine writing are
+measurement questions, and that the failure mode isn&rsquo;t getting a wrong answer —
+it&rsquo;s building an instrument that can&rsquo;t tell you you&rsquo;re wrong. So the
+next two programs are built instrument-first. They have names, because they&rsquo;re
+going to be around a while.</p>
+
+<h2>Calliope</h2>
+<p>Calliope is the generation side: can any current open-weight model serve as a
+foundation for long-form literary fiction — not a paragraph of pastiche, but thousands
+of words of prose a serious reader wouldn&rsquo;t put down? Long-form literary quality
+is a genuinely hostile measurement target. There&rsquo;s no benchmark, the ground truth
+is contested, and every incentive points toward fooling yourself. So the project runs
+like an assay, not a demo: pre-registered protocols with thresholds frozen before any
+output exists, positive <em>and</em> negative controls, instrument validation on known-clean
+and known-dirty fixtures before a dollar of compute is spent, blinded human reading, and
+hard budget kill-rules enforced by fail-closed automation rather than good intentions.</p>
+<p>So far the program has produced adversarial peer reviews, incident postmortems, and a
+considerably more hardened remote-execution control plane than I expected to need —
+because the operational failures taught as much as the models did. I have paid real
+(small, capped, pre-authorized) money to learn exactly how a healthy GPU server can sit
+there billing while doing no science, and the automation that now prevents it is honestly
+some of my favorite work in the project. Results will come with receipts attached. Until
+then, the discipline is the deliverable.</p>
+
+<h2>Polyhymnia</h2>
+<p>Polyhymnia is the knowledge side. A century of serious writing about the craft of
+fiction exists — Lubbock, Booth, and everything since — and most of it disagrees with
+itself in ways that are the <em>point</em>, not a bug to be averaged away. Polyhymnia
+treats that body of thought the way a careful researcher treats any evidence base: exact
+editions, honest provenance, dimensional rights controls (owning a book is not permission
+to train on it), and a typed data model that preserves who claimed what, on what
+authority, and who disagreed — instead of flattening it all into the generic writing
+advice every chatbot already recites.</p>
+<p>It&rsquo;s also an exercise in a problem that matters well beyond fiction: how to
+ground model behavior in contested human knowledge without laundering authority or
+erasing disagreement. The current phase is foundations — sourcing, schemas, fail-closed
+validation, adversarially reviewed protocols — and the effectiveness questions are
+deliberately still open. Whether any of this measurably improves the diagnosis or
+revision of a manuscript is an empirical question, and I intend to answer it the slow
+way, with experiments where a null result would be reported just as loudly.</p>
+
+<h2>What I&rsquo;m not saying yet</h2>
+<p>Deliberately absent from this post: model names and verdicts, metrics, thresholds,
+assay designs, and every specific instrument. Those live in the lab notebooks until
+there are results worth attaching them to — partly because that&rsquo;s how
+pre-registration is supposed to work, and partly because I&rsquo;ve learned that the
+fastest way to ruin a measurement program is to start defending its early opinions in
+public. When something survives its own controls, you&rsquo;ll read about it here,
+with the data.</p>
+
+<hr />
+<p><em>Also on this site: <a href="width-of-a-voice.html">I scored the internet&rsquo;s
+favorite &ldquo;AI tells&rdquo; against 15 great novelists. They flag the novelists.</a></em></p>
+
+  </div>
+</article>
+<footer>
+  <span>© 2026 Will Bryant · text CC BY 4.0</span>
+  <span><a href="../index.html">← all essays</a></span>
+</footer>
+</body>
+</html>
